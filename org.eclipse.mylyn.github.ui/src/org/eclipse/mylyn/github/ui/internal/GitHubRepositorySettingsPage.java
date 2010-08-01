@@ -19,7 +19,6 @@ package org.eclipse.mylyn.github.ui.internal;
 
 import java.util.regex.Matcher;
 
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -72,12 +71,16 @@ public class GitHubRepositorySettingsPage extends
 	@Override
 	protected void createAdditionalControls(Composite parent) {
 		// Set the URL now, because serverURL is definitely instantiated .
-		if (serverUrlCombo != null && (serverUrlCombo.getText() == null || serverUrlCombo.getText().trim().length() == 0)) {
-			String fullUrlText = URL+"/user/project";
+		if (serverUrlCombo != null
+				&& (serverUrlCombo.getText() == null || serverUrlCombo
+						.getText().trim().length() == 0)) {
+			String fullUrlText = URL + "/user/project";
 			serverUrlCombo.setText(fullUrlText);
-			// select the user/project part of the URL so that the user can just start
+			// select the user/project part of the URL so that the user can just
+			// start
 			// typing to replace the text.
-			serverUrlCombo.setSelection(new Point(URL.length()+1,fullUrlText.length()));
+			serverUrlCombo.setSelection(new Point(URL.length() + 1, fullUrlText
+					.length()));
 		}
 
 		// Specify that you need the GitHub User Name
@@ -100,43 +103,54 @@ public class GitHubRepositorySettingsPage extends
 				int totalWork = 1000;
 				monitor.beginTask("Validating settings", totalWork);
 				try {
-					
+
 					String urlText = repository.getUrl();
-					Matcher urlMatcher = GitHub.URL_PATTERN.matcher(urlText==null?"":urlText);
+					Matcher urlMatcher = GitHub.URL_PATTERN
+							.matcher(urlText == null ? "" : urlText);
 					if (!urlMatcher.matches()) {
-						setStatus(GitHubUi.createErrorStatus("Server URL must be in the form http://github.com/user/project or\nhttp://www.github.org/user/project"));
+						setStatus(GitHubUi
+								.createErrorStatus("Server URL must be in the form http://github.com/user/project or\nhttp://www.github.org/user/project"));
 						return;
 					}
 					monitor.worked(100);
-					
+
 					String user = urlMatcher.group(1);
 					String repo = urlMatcher.group(2);
-					AuthenticationCredentials auth = repository.getCredentials(AuthenticationType.REPOSITORY);
-					
+					AuthenticationCredentials auth = repository
+							.getCredentials(AuthenticationType.REPOSITORY);
+
 					GitHubService service = new GitHubService();
-	
+
 					monitor.subTask("Contacting server...");
 					try {
-						// verify the repo
-						service.searchIssues(user, repo, new String("open"),"");
-						monitor.worked(400);
-						
 						// verify the credentials
 						if (auth == null) {
-							setStatus(GitHubUi.createErrorStatus("Credentials are required.  Please specify username and API Token."));
+							setStatus(GitHubUi
+									.createErrorStatus("Credentials are required.  Please specify username and API Token."));
 							return;
 						}
-						GitHubCredentials credentials = new GitHubCredentials(auth.getUserName(), auth.getPassword());
+						GitHubCredentials credentials = new GitHubCredentials(
+								auth.getUserName(), auth.getPassword());
 						if (!service.verifyCredentials(credentials)) {
-							setStatus(GitHubUi.createErrorStatus("Invalid credentials.  Please check your GitHub User ID and API Token.\nYou can find your API Token on your GitHub account settings page."));
-							return;	
+							setStatus(GitHubUi
+									.createErrorStatus("Invalid credentials.  Please check your GitHub User ID and API Token.\nYou can find your API Token on your GitHub account settings page."));
+							return;
 						}
+						monitor.worked(400);
+
+						// verify the repo
+						service.searchIssues(user, repo, new String("open"),
+								"", credentials);
+
 					} catch (GitHubServiceException e) {
-						setStatus(GitHubUi.createErrorStatus("Repository Test failed:"+ e.getMessage()));
+						setStatus(GitHubUi
+								.createErrorStatus("Repository Test failed:"
+										+ e.getMessage()));
 						return;
 					}
-					
-					setStatus(new Status(IStatus.OK,GitHubUi.BUNDLE_ID, "Success!"));
+
+					setStatus(new Status(IStatus.OK, GitHubUi.BUNDLE_ID,
+							"Success!"));
 				} finally {
 					monitor.done();
 				}
