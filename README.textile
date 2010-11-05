@@ -7,6 +7,19 @@ It includes merged contributions for "for priate repo access":https://github.com
 
 h2. Installation
 
+
+h3. From Update Site (recommended)
+
+http://iamamused.github.com/org.eclipse.mylyn.github/update
+
+* In Ecilpse go to *Help -> Install New Software*
+* For the *Work With* field enter: @http://iamamused.github.com/org.eclipse.mylyn.github/update@
+* continue with installation.
+
+*WARNING:* This connector has ALPHA status. 
+
+h3. From Source
+
 * Download (or clone) the source
 * In Eclipse select *File -> Import... -> Existing Projects into workspace*
 * Choose the downloaded source folder (this will create 5 mylyn github related projects)
