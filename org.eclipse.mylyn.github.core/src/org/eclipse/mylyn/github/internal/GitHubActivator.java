@@ -18,7 +18,6 @@ public class GitHubActivator implements BundleActivator {
 	public GitHubActivator() {
 	}
 
-	@Override
 	public void start(BundleContext context) throws Exception {
 		instance = this;
 		
@@ -27,7 +26,6 @@ public class GitHubActivator implements BundleActivator {
 		proxyServiceTracker.open();
 	}
 
-	@Override
 	public void stop(BundleContext context) throws Exception {
 		proxyServiceTracker.close();
 	}
