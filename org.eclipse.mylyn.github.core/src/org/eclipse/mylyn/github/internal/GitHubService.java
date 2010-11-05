@@ -64,6 +64,7 @@ public class GitHubService {
 	private final static String SEARCH = "search/"; // Implemented
 	// private final static String REOPEN = "reopen/";
 	// private final static String COMMENT = "comment/";
+	private final String COMMENTS = "comments/";
 	private final static String ADD_LABEL = "label/add/"; // Implemented
 	private final static String REMOVE_LABEL = "label/remove/"; // Implemented
 
@@ -574,6 +575,31 @@ public class GitHubService {
 		} catch (final RuntimeException runTimeException) {
 			throw runTimeException;
 		} catch (final Exception e) {
+			throw new GitHubServiceException(e);
+		} finally {
+			if (method != null) {
+				method.releaseConnection();
+			}
+		}
+	}
+
+	public List<GitHubComment> getIssueComments(String user, String project, String taskId)
+			throws GitHubServiceException {
+		GetMethod method = null;
+		try {
+			method = new GetMethod(gitURLBase + gitIssueRoot + COMMENTS + user + "/" + project + "/" + taskId);
+			executeMethod(method);
+			GitHubComments ghComments = gson.fromJson(method.getResponseBodyAsString(), GitHubComments.class);
+
+			List<GitHubComment> comments = new ArrayList<GitHubComment>();
+			for (GitHubComment comment : ghComments.getComments()) {
+				comments.add(comment);
+			}
+
+			return comments;
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
 			throw new GitHubServiceException(e);
 		} finally {
 			if (method != null) {

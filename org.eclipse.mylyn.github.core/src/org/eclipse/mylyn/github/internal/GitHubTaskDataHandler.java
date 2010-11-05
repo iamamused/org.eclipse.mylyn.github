@@ -4,18 +4,21 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryPerson;
 import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse.ResponseKind;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskDataHandler;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMetaData;
+import org.eclipse.mylyn.tasks.core.data.TaskCommentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 
@@ -48,7 +51,7 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 	}
 
 	public TaskData createPartialTaskData(TaskRepository repository,
-			IProgressMonitor monitor,String user, String project, GitHubIssue issue) {
+			IProgressMonitor monitor, String user, String project, GitHubIssue issue, List<GitHubComment> comments) {
 
 		TaskData data = new TaskData(getAttributeMapper(repository),
 				GitHubRepositoryConnector.KIND, repository.getRepositoryUrl(),
@@ -66,6 +69,30 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 		createAttribute(data, GitHubTaskAttributes.MODIFICATION_DATE, toLocalDate(issue.getCreated_at()));
 		createAttribute(data, GitHubTaskAttributes.CLOSED_DATE, toLocalDate(issue.getClosed_at()));
 		
+		if (comments != null) {
+			int i = 1;
+			for (GitHubComment comment : comments) {
+				TaskAttribute attribute = data.getRoot().createAttribute(
+						TaskAttribute.PREFIX_COMMENT + i);
+				TaskCommentMapper taskComment = TaskCommentMapper
+						.createFrom(attribute);
+
+				final RepositoryPerson author = new RepositoryPerson(
+						repository, comment.getUser());
+				author.setName(comment.getUser());
+				taskComment.setAuthor(author);
+				taskComment.setNumber(i);
+				taskComment.setText(comment.getBody());
+				try {
+					taskComment.setCreationDate(githubDateFormat.parse(comment
+							.getCreated_at()));
+				} catch (ParseException e) {
+					// ignore
+				}
+				taskComment.applyTo(attribute);
+				i++;
+			}
+		}
 		if (isPartial(data)) {
 			data.setPartial(true);
 		}
@@ -148,8 +175,8 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 
 	public TaskData createTaskData(TaskRepository repository,
 			IProgressMonitor monitor, String user, String project,
-			GitHubIssue issue) {
-		TaskData taskData = createPartialTaskData(repository, monitor, user, project, issue);
+			GitHubIssue issue, List<GitHubComment> comments) {
+		TaskData taskData = createPartialTaskData(repository, monitor, user, project, issue, comments);
 		taskData.setPartial(false);
 		
 		return taskData;
