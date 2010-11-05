@@ -1,12 +1,26 @@
 h2. Fork Specifics
 
-This is a fork of the "original connector":http://smilebase.github.com/org.eclipse.mylyn.github by smilebase.  "Configuration/installation specifics for this fork can be found in the project wiki":http://wiki.github.com/dgreen99/org.eclipse.mylyn.github/
+This is a fork of the "original connector":http://smilebase.github.com/org.eclipse.mylyn.github by smilebase. 
 
-h2. Installation update site
+It includes merged contributions for "for priate repo access":https://github.com/rbretherton/org.eclipse.mylyn.github and "comments":https://github.com/lucaspanjer/org.eclipse.mylyn.github 
 
-h3. http://dgreen99.github.com/org.eclipse.mylyn.github/site
 
-*WARNING:* This connector has ALPHA status. 
+h2. Installation
+
+* Download (or clone) the source
+* In Eclipse select *File -> Import... -> Existing Projects into workspace*
+* Choose the downloaded source folder (this will create 5 mylyn github related projects)
+* open @org.eclipse.mylyn.github_site@
+* right click on @/org.eclipse.mylyn.github_site/site.xml@ 
+* select *PDE Tools -> Build Site*.  
+
+After the build completes:
+
+* In Ecilpse go to *Help -> Install New Software*
+* For the *Work With* field press *Add*
+* Press the *Local...* button
+* select the @org.eclipse.mylyn.github_site@ folder 
+* continue with installation.
 
 h2. Developers
 
