@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -583,12 +584,13 @@ public class GitHubService {
 		}
 	}
 
-	public List<GitHubComment> getIssueComments(String user, String project, String taskId)
+	public List<GitHubComment> getIssueComments(String user, String project, String taskId, final GitHubCredentials credentials)
 			throws GitHubServiceException {
-		GetMethod method = null;
+		PostMethod method = null;
 		try {
-			method = new GetMethod(gitURLBase + gitIssueRoot + COMMENTS + user + "/" + project + "/" + taskId);
-			executeMethod(method);
+			// Build URL
+			String url =  gitURLBase + gitIssueRoot + COMMENTS + user + "/" + project + "/" + taskId;
+			method = executeMethod(url, credentials, null, null);
 			GitHubComments ghComments = gson.fromJson(method.getResponseBodyAsString(), GitHubComments.class);
 
 			List<GitHubComment> comments = new ArrayList<GitHubComment>();

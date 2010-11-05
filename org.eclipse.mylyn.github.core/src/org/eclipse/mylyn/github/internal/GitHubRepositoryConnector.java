@@ -137,7 +137,7 @@ public class GitHubRepositoryConnector extends AbstractRepositoryConnector {
 
 				// collect task data
 				for (GitHubIssue issue : issues.getIssues()) {
-					List<GitHubComment> comments = service.getIssueComments(user, project, issue.getNumber());
+					List<GitHubComment> comments = service.getIssueComments(user, project, issue.getNumber(), credentials);
 					TaskData taskData = taskDataHandler.createPartialTaskData(
 							repository, monitor,user, project, issue, comments);
 					collector.accept(taskData);
@@ -167,7 +167,7 @@ public class GitHubRepositoryConnector extends AbstractRepositoryConnector {
 		try {
 
 			GitHubIssue issue = service.showIssue(user, project, taskId, credentials);
-			List<GitHubComment> comments = service.getIssueComments(user, project, issue.getNumber());
+			List<GitHubComment> comments = service.getIssueComments(user, project, issue.getNumber(), credentials);
 			TaskData taskData = taskDataHandler.createTaskData(repository, monitor, user, project, issue, comments);
 			return taskData;
 		} catch (GitHubServiceException e) {
