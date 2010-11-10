@@ -64,7 +64,7 @@ public class GitHubService {
 	private final static String LIST = "list/"; // Implemented
 	private final static String SEARCH = "search/"; // Implemented
 	// private final static String REOPEN = "reopen/";
-	// private final static String COMMENT = "comment/";
+	private final static String COMMENT = "comment/";
 	private final String COMMENTS = "comments/";
 	private final static String ADD_LABEL = "label/add/"; // Implemented
 	private final static String REMOVE_LABEL = "label/remove/"; // Implemented
@@ -93,7 +93,7 @@ public class GitHubService {
 
 		try {
 			String url = gitURLBase + gitUserRoot + EMAILS;
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			// if we reach here we know that credentials were good
 			success = true;
@@ -151,7 +151,7 @@ public class GitHubService {
 			}
 
 			// execute HTTP POST method
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			// transform JSON to Java object
 			String responseBody = new String(method.getResponseBody());
@@ -203,7 +203,7 @@ public class GitHubService {
 					+ repo + "/" + label + "/" + Integer.toString(issueNumber);
 
 			// execute HTTP POST method
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			// Check the response, make sure the action was successful
 			final String response = method.getResponseBodyAsString();
@@ -257,7 +257,7 @@ public class GitHubService {
 					+ repo + "/" + label + "/" + Integer.toString(issueNumber);
 
 			// execute HTTP GET method
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			// Check the response, make sure the action was successful
 			final String response = method.getResponseBodyAsString();
@@ -310,7 +310,7 @@ public class GitHubService {
 			String url = gitURLBase + gitIssueRoot + OPEN + user + "/" + repo;
 
 			method = executeMethod(url, credentials, issue.getBody(),
-					issue.getTitle());
+					issue.getTitle(), null);
 
 			showIssue = gson.fromJson(new String(method.getResponseBody()),
 					GitHubShowIssue.class);
@@ -368,7 +368,7 @@ public class GitHubService {
 					+ "/" + issue.getNumber();
 
 			method = executeMethod(url, credentials, issue.getBody(),
-					issue.getTitle());
+					issue.getTitle(), null);
 
 			GitHubShowIssue showIssue = gson.fromJson(
 					method.getResponseBodyAsString(), GitHubShowIssue.class);
@@ -408,7 +408,7 @@ public class GitHubService {
 					+ "/" + issueNumber;
 
 			// execute HTTP POST method
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			// transform JSON to Java object
 			GitHubShowIssue issue = gson
@@ -430,7 +430,7 @@ public class GitHubService {
 	}
 
 	private PostMethod executeMethod(String url, GitHubCredentials credentials,
-			String body, String title) throws GitHubServiceException {
+			String body, String title, String comment) throws GitHubServiceException {
 
 		// Create the HTTP POST method
 		PostMethod method = new PostMethod(url);
@@ -448,6 +448,9 @@ public class GitHubService {
 		}
 		if (title != null) {
 			nameValuePairs.add(new NameValuePair("title", title));
+		}
+		if (comment != null) {
+			nameValuePairs.add(new NameValuePair("comment", comment));
 		}
 
 		method.setRequestBody(nameValuePairs.toArray(new NameValuePair[] {}));
@@ -554,7 +557,7 @@ public class GitHubService {
 			String url = gitURLBase + gitIssueRoot + githubOperation + user
 					+ "/" + repo + "/" + issue.getNumber();
 
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 
 			GitHubShowIssue showIssue = gson.fromJson(
 					method.getResponseBodyAsString(), GitHubShowIssue.class);
@@ -590,7 +593,7 @@ public class GitHubService {
 		try {
 			// Build URL
 			String url =  gitURLBase + gitIssueRoot + COMMENTS + user + "/" + project + "/" + taskId;
-			method = executeMethod(url, credentials, null, null);
+			method = executeMethod(url, credentials, null, null, null);
 			GitHubComments ghComments = gson.fromJson(method.getResponseBodyAsString(), GitHubComments.class);
 
 			List<GitHubComment> comments = new ArrayList<GitHubComment>();
@@ -609,4 +612,22 @@ public class GitHubService {
 			}
 		}
 	}
+
+	public void addComment(String user, String project, String taskId,
+			GitHubCredentials credentials, String commentText) throws GitHubServiceException {
+		PostMethod method = null;
+		try {
+			String url = gitURLBase + gitIssueRoot + COMMENT + user + "/" + project + "/" + taskId;
+			method = executeMethod(url, credentials, null, null, commentText);
+		} catch (RuntimeException e){
+
+		} catch (Exception e) {
+			throw new GitHubServiceException(e);
+		} finally {
+			if (method != null) {
+				method.releaseConnection();
+			}
+		}
+	}
+
 }
