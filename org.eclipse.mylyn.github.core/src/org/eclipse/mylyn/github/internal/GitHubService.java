@@ -461,7 +461,7 @@ public class GitHubService {
 		} catch (IOException e) {
 			throw new GitHubServiceException(e);
 		}
-		if (status != HttpStatus.SC_OK) {
+		if (status != HttpStatus.SC_OK && status != HttpStatus.SC_CREATED) {
 			switch (status) {
 			case HttpStatus.SC_UNAUTHORIZED:
 			case HttpStatus.SC_FORBIDDEN:
