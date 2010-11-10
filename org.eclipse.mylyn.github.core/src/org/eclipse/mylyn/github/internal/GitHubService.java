@@ -63,7 +63,7 @@ public class GitHubService {
 	private final static String LIST = "list/"; // Implemented
 	private final static String SEARCH = "search/"; // Implemented
 	// private final static String REOPEN = "reopen/";
-	// private final static String COMMENT = "comment/";
+	private final static String COMMENT = "comment/";
 	private final String COMMENTS = "comments/";
 	private final static String ADD_LABEL = "label/add/"; // Implemented
 	private final static String REMOVE_LABEL = "label/remove/"; // Implemented
@@ -586,4 +586,28 @@ public class GitHubService {
 			}
 		}
 	}
+
+	public void addComment(String user, String project, String taskId,
+			GitHubCredentials credentials, String commentText) throws GitHubServiceException {
+		PostMethod method = null;
+		try {
+			method = new  PostMethod(gitURLBase + gitIssueRoot + COMMENT + user + "/" + project + "/" + taskId);
+
+			final NameValuePair login = new NameValuePair("login", credentials.getUsername());
+			final NameValuePair token = new NameValuePair("token", credentials.getApiToken());
+			final NameValuePair comment = new NameValuePair("comment", commentText);
+
+			method.setRequestBody(new NameValuePair[] { login, token, comment });
+			executeMethod(method);
+		} catch (RuntimeException e){
+
+		} catch (Exception e) {
+			throw new GitHubServiceException(e);
+		} finally {
+			if (method != null) {
+				method.releaseConnection();
+			}
+		}
+	}
+
 }

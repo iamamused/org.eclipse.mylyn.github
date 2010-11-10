@@ -59,8 +59,7 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 		data.setVersion(DATA_VERSION);
 		
 		createOperations(data,issue);
-		
-		
+
 		createAttribute(data, GitHubTaskAttributes.KEY,issue.getNumber());
 		createAttribute(data, GitHubTaskAttributes.TITLE, issue.getTitle());
 		createAttribute(data, GitHubTaskAttributes.BODY, issue.getBody());
@@ -68,6 +67,7 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 		createAttribute(data, GitHubTaskAttributes.CREATION_DATE, toLocalDate(issue.getCreated_at()));
 		createAttribute(data, GitHubTaskAttributes.MODIFICATION_DATE, toLocalDate(issue.getCreated_at()));
 		createAttribute(data, GitHubTaskAttributes.CLOSED_DATE, toLocalDate(issue.getClosed_at()));
+		createAttribute(data, GitHubTaskAttributes.NEWCOMMENT, null);
 		
 		if (comments != null) {
 			int i = 1;
@@ -251,14 +251,20 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 				
 				GitHubTaskOperation operation = null;
 				
-				
 				if (operationAttribute != null) {
 					String opId = operationAttribute.getValue();
 					operation = GitHubTaskOperation.fromId(opId);
 					
 				}
+
+				service.editIssue(user , repo, issue, credentials);
+
+				String newComment = getAttributeValue(taskData,GitHubTaskAttributes.NEWCOMMENT);
+				if (newComment != null && newComment.length() > 0) {
+					service.addComment(user, repo, issue.getNumber(), credentials, newComment);
+				}
+
 				if (operation != null && operation != GitHubTaskOperation.LEAVE) {
-					service.editIssue(user , repo, issue, credentials);
 					switch (operation) {
 					case REOPEN:
 						service.reopenIssue(user,repo,issue,credentials);
@@ -269,16 +275,12 @@ public class GitHubTaskDataHandler extends AbstractTaskDataHandler {
 					default:
 						throw new IllegalStateException("not implemented: "+operation);
 					}
-				} else {
-					service.editIssue(user , repo, issue, credentials);
 				}
 			}
 			return new RepositoryResponse(taskData.isNew()?ResponseKind.TASK_CREATED:ResponseKind.TASK_UPDATED,issue.getNumber());
 		} catch (GitHubServiceException e) {
 			throw new CoreException(GitHub.createErrorStatus(e));
 		}
-		
 	}
-
 
 }
